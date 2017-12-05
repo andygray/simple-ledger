@@ -40,13 +40,45 @@
     <div id="entity_list">
         <ul></ul>
     </div>
+    <div id="vue-app">
+        <ul>
+            <li v-for="boy in boys">
+                {{ boy }}
+            </li>
+        </ul>
+    </div>
     <p>Open developer tools and view console for logging</p>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 <script src="https://cdn.ethers.io/scripts/ethers-v2.0.min.js" type="text/javascript"></script>
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script src="https://gstatic.com/firebasejs/4.0.0/firebase.js"></script>
+<script src="https://unpkg.com/vuefire/dist/vuefire.js"></script>
 
 <script>
+    /* global Vue, firebase */
+    var config = {
+        apiKey: "AIzaSyCxxAe_V_G4KH60eHR79H-DVmX4sswwbB8",
+        authDomain: "betting-boys.firebaseapp.com",
+        databaseURL: "https://betting-boys.firebaseio.com",
+        projectId: "betting-boys",
+        storageBucket: "betting-boys.appspot.com",
+        messagingSenderId: "394601607248"
+    };
+    var db = firebase.initializeApp(config).database();
+    var boys = db.ref('/');
+    new Vue({
+        el: '#vue-app',
+        data: {},
+        firebase: {
+            boys: boys
+        },
+        methods: {}
+    })
+</script>
+
+<script>
+    /* global ethers */
     var provider = new ethers.providers.InfuraProvider('ropsten');
 
     var address = '0x0C3dc5ec9106CF7c5702430e727De76786fb3C9e';
@@ -67,10 +99,10 @@
     ['AG', 'EE', 'KG', 'JM'].forEach(function (entity) {
         contract.ledger(ethers.utils.toUtf8Bytes(entity)).then(function (result) {
             console.log(entity + ': ' + result[0].toString());
-            $('#entity_list ul').append('<li>' + entity + ': <strong>' + result[0].toString() + '</strong></li>');
         });
     });
 </script>
+
 </body>
 
 </html>
