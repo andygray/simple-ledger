@@ -1,33 +1,11 @@
 <html>
 
 <head>
-    <title>Simple ledger</title>
+    <title>Betting Boys</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
     <style>
         #vue-app {
             font-family: 'Avenir', Helvetica, Arial, sans-serif;
-            margin: 60px auto;
-            max-width: 480px;
-            padding: 0em 1em;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0em 1em;
-        }
-
-        li {
-            display: block;
-            margin: 10px;
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 2em;
-        }
-
-        p {
-            color: gray;
-            text-align: center;
         }
 
         [v-cloak] {
@@ -38,25 +16,32 @@
 
 <body>
 
-<div id="vue-app">
-    <h1>Simple ledger</h1>
+<div id="vue-app" class="container">
+    <h1 class="text-center">Betting Boys</h1>
 
-    <p v-if="loading">Loading...</p>
+    <p v-if="loading" class="text-muted text-center">Loading...</p>
 
-    <ul v-if="!loading" v-cloak>
-        <li v-for="boy in resolvedContract.boys">
-            <span>{{ boy }}</span> 
-        </li>
-    </ul>
+    <div v-if="!loading" v-cloak>
+        <table class="table table-striped">
+            <tbody>
+            <tr v-for="boy in resolvedContract.boys">
+                <td>{{ boy.name }}</td>
+                <td class="text-muted">{{ boy.month }}</td>
+                <td class="text-right"><strong>{{ boy.total }}</strong></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <script src="https://cdn.ethers.io/scripts/ethers-v2.0.min.js" type="text/javascript"></script>
-<script src="https://unpkg.com/vue/dist/vue.js"></script>
-<script src="https://gstatic.com/firebasejs/4.0.0/firebase.js"></script>
-<script src="https://unpkg.com/vuefire/dist/vuefire.js"></script>
+<script src="https://unpkg.com/vue/dist/vue.js" type="text/javascript"></script>
+<script src="https://gstatic.com/firebasejs/4.0.0/firebase.js" type="text/javascript"></script>
+<script src="https://unpkg.com/vuefire/dist/vuefire.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.js" type="text/javascript"></script>
 
 <script>
-    /* global Vue, firebase, ethers */
+    /* global Vue, firebase, ethers, _ */
     var provider = new ethers.providers.InfuraProvider('ropsten');
 
     var abi = '[{"constant":false,"inputs":[{"name":"_entity","type":"bytes2"},{"name":"_amount","type":"int256"}],"name":"recordEntry","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes2"}],"name":"ledger","outputs":[{"name":"","type":"int256"}],"payable":false,"type":"function"},{"inputs":[],"payable":false,"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_entity","type":"bytes2"},{"indexed":false,"name":"_amount","type":"int256"}],"name":"SimpleLedgerEntry","type":"event"}]';
@@ -69,25 +54,28 @@
         storageBucket: "betting-boys.appspot.com",
         messagingSenderId: "394601607248"
     };
+
     var db = firebase.initializeApp(config).database();
 
     new Vue({
         el: '#vue-app',
         data: {
             loading: true,
-            resolvedContracts: undefined
+            resolvedContract: undefined
         },
         firebase: {
             boys: {
-              source: db.ref('boys'),
-              readyCallback: function (snapshot) {
-                console.log('loaded...');
-                console.log(snapshot.val());
-              }
+                source: db.ref('boys'),
+                readyCallback: function (snapshot) {
+                    console.log('loaded boys lookup...');
+                    console.log(snapshot.val());
+                }
             },
             contracts: {
                 source: db.ref('contracts'),
                 readyCallback: function (snapshot) {
+                    var that = this;
+
                     console.log('loaded contracts ref...');
                     console.log(snapshot.val());
 
@@ -105,8 +93,9 @@
 
                     // we expect possible entries for these entities; 0 returned if no entry
                     this.resolvedContract.boys.forEach(function (entity) {
-                        contract.ledger(ethers.utils.toUtf8Bytes(entity)).then(function (result) {
-                            console.log(entity + ': ' + result[0].toString());
+                        contract.ledger(ethers.utils.toUtf8Bytes(entity['name'])).then(function (result) {
+                            console.log(entity['name'] + ': ' + result[0].toString());
+                            entity['total'] = result[0].toString();
                         });
                     });
 
