@@ -44,7 +44,7 @@
     <p v-if="loading">Loading...</p>
 
     <ul v-if="!loading" v-cloak>
-        <li v-for="boy in boys">
+        <li v-for="boy in resolvedContract.boys">
             <span>{{ boy }}</span> 
         </li>
     </ul>
@@ -56,7 +56,11 @@
 <script src="https://unpkg.com/vuefire/dist/vuefire.js"></script>
 
 <script>
-    /* global Vue, firebase */
+    /* global Vue, firebase, ethers */
+    var provider = new ethers.providers.InfuraProvider('ropsten');
+
+    var abi = '[{"constant":false,"inputs":[{"name":"_entity","type":"bytes2"},{"name":"_amount","type":"int256"}],"name":"recordEntry","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes2"}],"name":"ledger","outputs":[{"name":"","type":"int256"}],"payable":false,"type":"function"},{"inputs":[],"payable":false,"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_entity","type":"bytes2"},{"indexed":false,"name":"_amount","type":"int256"}],"name":"SimpleLedgerEntry","type":"event"}]';
+    
     var config = {
         apiKey: "AIzaSyCxxAe_V_G4KH60eHR79H-DVmX4sswwbB8",
         authDomain: "betting-boys.firebaseapp.com",
@@ -70,47 +74,47 @@
     new Vue({
         el: '#vue-app',
         data: {
-            loading: true
+            loading: true,
+            resolvedContracts: undefined
         },
         firebase: {
             boys: {
               source: db.ref('boys'),
-              asObject: false,
               readyCallback: function (snapshot) {
                 console.log('loaded...');
                 console.log(snapshot.val());
-                this.loading = false;
               }
+            },
+            contracts: {
+                source: db.ref('contracts'),
+                readyCallback: function (snapshot) {
+                    console.log('loaded contracts ref...');
+                    console.log(snapshot.val());
+
+                    this.resolvedContract = snapshot.val();
+
+                    console.log('Instantiating contract at ' + this.resolvedContract.contract);
+                    console.log('Contract ABI ' + abi);
+
+                    var contract = new ethers.Contract(this.resolvedContract.contract, abi, provider);
+                    console.log(contract);
+
+                    contract.owner().then(function (result) {
+                        console.log('Owner ' + result[0]);
+                    });
+
+                    // we expect possible entries for these entities; 0 returned if no entry
+                    this.resolvedContract.boys.forEach(function (entity) {
+                        contract.ledger(ethers.utils.toUtf8Bytes(entity)).then(function (result) {
+                            console.log(entity + ': ' + result[0].toString());
+                        });
+                    });
+
+                    this.loading = false;
+                }
             }
-        },
-        methods: {}
+        }
     })
-</script>
-
-<script>
-    /* global ethers */
-    var provider = new ethers.providers.InfuraProvider('ropsten');
-
-    var address = '0x0C3dc5ec9106CF7c5702430e727De76786fb3C9e';
-
-    var abi = '[{"constant":false,"inputs":[{"name":"_entity","type":"bytes2"},{"name":"_amount","type":"int256"}],"name":"recordEntry","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes2"}],"name":"ledger","outputs":[{"name":"","type":"int256"}],"payable":false,"type":"function"},{"inputs":[],"payable":false,"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_entity","type":"bytes2"},{"indexed":false,"name":"_amount","type":"int256"}],"name":"SimpleLedgerEntry","type":"event"}]';
-
-    console.log('Instantiating contract at ' + address);
-    console.log('Contract ABI ' + abi);
-
-    var contract = new ethers.Contract(address, abi, provider);
-    console.log(contract);
-
-    contract.owner().then(function (result) {
-        console.log('Owner ' + result[0]);
-    });
-
-    // we expect possible entries for these entities; 0 returned if no entry
-    ['AG', 'EE', 'KG', 'JM'].forEach(function (entity) {
-        contract.ledger(ethers.utils.toUtf8Bytes(entity)).then(function (result) {
-            console.log(entity + ': ' + result[0].toString());
-        });
-    });
 </script>
 
 </body>
