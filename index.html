@@ -19,7 +19,10 @@
 <div id="vue-app">
     <h1 class="text-center">Betting Boys</h1>
 
-    <p v-if="loading" class="text-muted text-center">Loading...</p>
+    <p v-if="loading" class="text-muted text-center">
+        <i class="fa fa-money fa-spin fa-5x fa-fw"></i>
+        <span class="sr-only">Loading...</span>
+    </p>
 
     <div v-if="!loading" v-cloak>
         <table class="table table-striped">
@@ -34,18 +37,21 @@
     </div>
 </div>
 
+<script src="https://use.fontawesome.com/e88a1894a6.js" type="text/javascript"></script>
+
 <script src="https://cdn.ethers.io/scripts/ethers-v2.0.min.js" type="text/javascript"></script>
+
 <script src="https://unpkg.com/vue/dist/vue.js" type="text/javascript"></script>
 <script src="https://gstatic.com/firebasejs/4.0.0/firebase.js" type="text/javascript"></script>
 <script src="https://unpkg.com/vuefire/dist/vuefire.js" type="text/javascript"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.5.1/bluebird.core.js" type="text/javascript"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.js" type="text/javascript"></script>
 
 <script>
-    /* global Vue, firebase, ethers, _ */
+    /* global Vue, firebase, ethers, _, Promise */
     var provider = new ethers.providers.InfuraProvider('ropsten');
-
-    var abi = '[{"constant":false,"inputs":[{"name":"_entity","type":"bytes2"},{"name":"_amount","type":"int256"}],"name":"recordEntry","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes2"}],"name":"ledger","outputs":[{"name":"","type":"int256"}],"payable":false,"type":"function"},{"inputs":[],"payable":false,"type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_entity","type":"bytes2"},{"indexed":false,"name":"_amount","type":"int256"}],"name":"SimpleLedgerEntry","type":"event"}]';
-
+    
     var config = {
         apiKey: "AIzaSyCxxAe_V_G4KH60eHR79H-DVmX4sswwbB8",
         authDomain: "betting-boys.firebaseapp.com",
@@ -61,7 +67,8 @@
         el: '#vue-app',
         data: {
             loading: true,
-            resolvedContract: undefined
+            resolvedContract: undefined,
+            total: undefined
         },
         firebase: {
             boys: {
@@ -82,24 +89,28 @@
                     this.resolvedContract = snapshot.val();
 
                     console.log('Instantiating contract at ' + this.resolvedContract.contract);
-                    console.log('Contract ABI ' + abi);
+                    console.log('Contract ABI ' + this.resolvedContract.abi);
 
-                    var contract = new ethers.Contract(this.resolvedContract.contract, abi, provider);
+                    var contract = new ethers.Contract(this.resolvedContract.contract, this.resolvedContract.abi, provider);
                     console.log(contract);
 
                     contract.owner().then(function (result) {
                         console.log('Owner ' + result[0]);
                     });
 
-                    // we expect possible entries for these entities; 0 returned if no entry
+                    var callPromises = [];
                     this.resolvedContract.boys.forEach(function (entity) {
-                        contract.ledger(ethers.utils.toUtf8Bytes(entity['name'])).then(function (result) {
-                            console.log(entity['name'] + ': ' + result[0].toString());
-                            entity['total'] = result[0].toString();
-                        });
+                        callPromises.push(contract.ledger(ethers.utils.toUtf8Bytes(entity['name'])));
                     });
 
-                    this.loading = false;
+                    Promise.all(callPromises).then(function(callResults) {
+                        console.log(callResults);
+                        _.forEach(callResults, function (callRes) {
+                            console.log(callRes[0].toString());
+                        });
+
+                        that.loading = false;
+                    });
                 }
             }
         }
