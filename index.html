@@ -10,29 +10,100 @@
         [v-cloak] {
             display: none;
         }
+
+        body {
+            background-color: #333;
+            paddimg: 0;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        h1 {
+            color: #BBB;
+            font-size: 18px;
+            text-align: center;
+            padding: 5px;
+        }
+
+        .pos {
+            background: green;
+        }
+
+        .neg {
+            background: red;
+        }
+
+        .neut {
+            background: #222;
+            color: #CCC;
+        }
+
+        .percentChange {
+            color: #F8F8F8;
+            text-align: center;
+        }
+
+        .title {
+            background: #CCC;
+            color: #333 !important;
+        }
+
+        .boyRow {
+            display: -webkit-flex;
+            display: -moz-flex;
+            display: -ms-flex;
+            display: -o-flex;
+            display: flex;
+            width: 100%;
+            height: 40px;
+            flex-flow: row;
+            align-items: center;
+            -webkit-border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            -moz-border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            -ms-border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            -o-border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            line-height: 40px;
+            text-align: center;
+        }
+
+        .boyName {
+            color: #CCC;
+            width: 50%;
+            padding-left: 5px;
+            line-height: 40px;
+            text-align: left !important;
+        }
+
+        .month {
+            width: 30%;
+            color: #CCC;
+        }
+
+        .total {
+            width: 20%;
+            line-height: 40px;
+
+        }
     </style>
 </head>
 
 <body>
 
 <div id="vue-app">
-    <h1 class="text-center">Betting Boys</h1>
+    <h1>Betting Boys</h1>
 
     <p v-if="loading">
         <i class="fa fa-money fa-spin fa-5x fa-fw"></i>
         <span class="sr-only">Loading...</span>
     </p>
 
-    <div v-if="!loading" v-cloak>
-        <table width="90%">
-            <tbody>
-            <tr v-for="boy in resolvedContract.boys">
-                <td>{{ boy.name }}</td>
-                <td class="text-muted">{{ boy.month }}</td>
-                <td class="text-right"><strong>{{ boy.total }}</strong></td>
-            </tr>
-            </tbody>
-        </table>
+    <div v-if="!loading" v-cloak class="miTable">
+        <div class="boyRow" v-for="boy in resolvedContract.boys">
+            <div class="boyName">{{ boy.name }}</div>
+            <div class="month">{{ boy.month }}</div>
+            <div class="total pos">{{ boy.total }}</div>
+        </div>
     </div>
 </div>
 
