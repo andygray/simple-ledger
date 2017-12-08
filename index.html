@@ -14,14 +14,14 @@
 
         body {
             background-color: #333;
-            paddimg: 0;
+            padding: 0;
             margin: 0;
-            font-size: 14px;
+            font-size: 1.2em;
         }
 
         h1 {
             color: #BBB;
-            font-size: 18px;
+            font-size: 2em;
             text-align: center;
             padding: 5px;
         }
@@ -30,23 +30,9 @@
             background: green;
         }
 
-        .neg {
-            background: red;
-        }
-
         .neut {
             background: #222;
             color: #CCC;
-        }
-
-        .percentChange {
-            color: #F8F8F8;
-            text-align: center;
-        }
-
-        .title {
-            background: #CCC;
-            color: #333 !important;
         }
 
         .boyRow {
@@ -86,6 +72,10 @@
             line-height: 40px;
 
         }
+
+        .spinner {
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -94,7 +84,7 @@
 <div id="vue-app">
     <h1>Betting Boys</h1>
 
-    <p v-if="loading">
+    <p v-if="loading" class="spinner">
         <i class="fa fa-money fa-spin fa-5x fa-fw"></i>
         <span class="sr-only">Loading...</span>
     </p>
@@ -103,7 +93,7 @@
         <div class="boyRow" v-for="boy in resolvedContract.boys">
             <div class="boyName">{{ boy.name }}</div>
             <div class="month">{{ boy.month }}</div>
-            <div class="total pos">{{ boy.total }}</div>
+            <div class="total neut">{{ boy.total }}</div>
         </div>
     </div>
 </div>
@@ -142,13 +132,6 @@
             total: undefined
         },
         firebase: {
-            boys: {
-                source: db.ref('boys'),
-                readyCallback: function (snapshot) {
-                    console.log('loaded boys lookup...');
-                    console.log(snapshot.val());
-                }
-            },
             contracts: {
                 source: db.ref('contracts'),
                 readyCallback: function (snapshot) {
@@ -171,13 +154,19 @@
 
                     var callPromises = [];
                     this.resolvedContract.boys.forEach(function (entity) {
-                        callPromises.push(contract.ledger(ethers.utils.toUtf8Bytes(entity['name'])));
+                        callPromises.push(contract.readEntry(ethers.utils.toUtf8Bytes(entity['name'])));
                     });
 
+                    console.log(this.resolvedContract.boys);
+
                     Promise.all(callPromises).then(function(callResults) {
-                        console.log(callResults);
                         _.forEach(callResults, function (callRes) {
-                            console.log(callRes[0].toString());
+                            if (callRes[1].toString() !== '0') {
+                                var boyObj = _.find(that.resolvedContract.boys, function (boy) {
+                                    return boy.name === ethers.utils.toUtf8String(callRes[0].toString())
+                                });
+                                boyObj.total = callRes[1].toString();
+                            }
                         });
 
                         that.loading = false;

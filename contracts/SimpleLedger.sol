@@ -24,4 +24,8 @@ contract SimpleLedger {
         ledger[_entity] = _amount;
         SimpleLedgerEntry(_entity, _amount);
     }
+
+    function readEntry(bytes2 _entity) constant returns (bytes2 entity, int256 amount) {
+        return (_entity, ledger[_entity]);
+    }
 }
