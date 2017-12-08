@@ -2,7 +2,6 @@
 
 <head>
     <title>Betting Boys</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
     <style>
         #vue-app {
             font-family: 'Avenir', Helvetica, Arial, sans-serif;
@@ -19,13 +18,13 @@
 <div id="vue-app">
     <h1 class="text-center">Betting Boys</h1>
 
-    <p v-if="loading" class="text-muted text-center">
+    <p v-if="loading">
         <i class="fa fa-money fa-spin fa-5x fa-fw"></i>
         <span class="sr-only">Loading...</span>
     </p>
 
     <div v-if="!loading" v-cloak>
-        <table class="table table-striped">
+        <table width="90%">
             <tbody>
             <tr v-for="boy in resolvedContract.boys">
                 <td>{{ boy.name }}</td>
@@ -51,7 +50,7 @@
 <script>
     /* global Vue, firebase, ethers, _, Promise */
     var provider = new ethers.providers.InfuraProvider('ropsten');
-    
+
     var config = {
         apiKey: "AIzaSyCxxAe_V_G4KH60eHR79H-DVmX4sswwbB8",
         authDomain: "betting-boys.firebaseapp.com",

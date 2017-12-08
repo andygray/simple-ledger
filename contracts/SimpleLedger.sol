@@ -1,5 +1,6 @@
 pragma solidity ^0.4.11;
 
+
 contract SimpleLedger {
 
     modifier onlyOwner() {
@@ -9,10 +10,7 @@ contract SimpleLedger {
 
     address public owner;
 
-    event SimpleLedgerEntry(
-    bytes2 indexed _entity,
-    int256 _amount
-    );
+    event SimpleLedgerEntry(bytes2 indexed _entity, int256 _amount);
 
     // entity -> amount
     // for example: "AB" -> 999
