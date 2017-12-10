@@ -3,89 +3,15 @@
 <head>
     <title>Betting Boys</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        #vue-app {
-            font-family: 'Avenir', Helvetica, Arial, sans-serif;
-        }
-
-        [v-cloak] {
-            display: none;
-        }
-
-        body {
-            background-color: #333;
-            padding: 0;
-            margin: 0;
-            font-size: 1.2em;
-        }
-
-        h1 {
-            color: #AAA;
-            font-size: 2em;
-            text-align: center;
-            padding: 5px;
-        }
-
-        .pos {
-            background: green;
-            color: #CCC;
-            font-weight: bold;
-        }
-
-        .neut {
-            background: #222;
-            color: #CCC;
-        }
-
-        .boyRow {
-            display: -webkit-flex;
-            display: -moz-flex;
-            display: -ms-flex;
-            display: -o-flex;
-            display: flex;
-            width: 100%;
-            height: 40px;
-            flex-flow: row;
-            align-items: center;
-            -webkit-border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            -moz-border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            -ms-border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            -o-border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            line-height: 40px;
-            text-align: center;
-        }
-
-        .boyName {
-            color: #CCC;
-            width: 50%;
-            padding-left: 5px;
-            line-height: 40px;
-            text-align: left !important;
-        }
-
-        .month {
-            width: 30%;
-            color: #AAA;
-        }
-
-        .total {
-            width: 20%;
-            line-height: 40px;
-        }
-
-        .spinner {
-            text-align: center;
-            margin-top: 2em;
-            color: green;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="./style.css">
 </head>
 
 <body>
 
 <div id="vue-app">
     <h1>Betting Boys</h1>
+
+    <h2 v-if="!loading" v-cloak>Total: <span class="grandTotal">{{ grandTotal }}</span></h2>
 
     <p v-if="loading" class="spinner">
         <i class="fa fa-money fa-spin fa-5x fa-fw"></i>
@@ -96,7 +22,10 @@
         <div class="boyRow" v-for="boy in resolvedContract.boys">
             <div class="boyName">{{ boy.name }}</div>
             <div class="month">{{ boy.month }}</div>
-            <div class="total" v-bind:class="{ 'pos': boy.total > 0, 'neut': boy.total === 0 }">{{ boy.total }}</div>
+            <div class="total"
+                 v-bind:class="{ 'pos': boy.total > 0, 'neut': boy.total === 0, 'tbc': boy.total === -1 }">
+                {{ boy.total }}
+            </div>
         </div>
     </div>
 </div>
@@ -132,7 +61,7 @@
         data: {
             loading: true,
             resolvedContract: undefined,
-            total: undefined
+            grandTotal: undefined
         },
         firebase: {
             contracts: {
@@ -157,7 +86,8 @@
 
                     var callPromises = [];
                     this.resolvedContract.boys.forEach(function (entity) {
-                        callPromises.push(contract.readEntry(ethers.utils.toUtf8Bytes(entity['name'])));
+                        console.log(entity);
+                        callPromises.push(contract.readEntry(ethers.utils.toUtf8Bytes(entity['initials'])));
                     });
 
                     console.log(this.resolvedContract.boys);
@@ -169,11 +99,18 @@
 
                             if (total !== 0) {
                                 var boyObj = _.find(that.resolvedContract.boys, function (boy) {
-                                    return boy.name === initials
+                                    return boy.initials === initials
                                 });
                                 boyObj.total = total;
                             }
                         });
+
+                        that.grandTotal = _.reduce(that.resolvedContract.boys, function(sum, n) {
+                            if (n.total < 0) {
+                                return sum;
+                            }
+                            return sum + n.total
+                        }, 0);
 
                         that.loading = false;
                     });
