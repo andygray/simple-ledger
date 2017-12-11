@@ -19,19 +19,20 @@
     </p>
 
     <div v-if="!loading" v-cloak class="miTable">
-        <div v-for="contract in allContracts">
+        <div v-for="contract in allContracts" v-if="selectedContract == contract.contract">
             <h2 v-if="!loading" v-cloak>{{ contract.name }}: <span class="grandTotal">{{ contract.grandTotal }}</span></h2>
             <div class="boyRow" v-for="boy in contract.boys">
                 <div class="boyName">{{ boy.name }}</div>
                 <div class="month">{{ boy.month }}</div>
-                <div class="total"
-                     v-bind:class="{ 'pos': boy.total > 0, 'neut': boy.total === 0, 'tbc': boy.total === -1 }">
+                <div class="total" :class="{ 'pos': boy.total > 0, 'neut': boy.total === 0, 'tbc': boy.total === -1 }">
                     {{ boy.total }}
                 </div>
             </div>
         </div>
     </div>
-</div>
+
+    <a v-for="contract in allContracts" href="#"  @click="selectedContract = contract.contract">{{ contract.name }}&nbsp;</a>
+</a>
 
 <script src="https://use.fontawesome.com/e88a1894a6.js" type="text/javascript"></script>
 
@@ -64,7 +65,8 @@
         data: {
             loading: true,
             allContracts: undefined,
-            grandTotal: undefined
+            grandTotal: undefined,
+            selectedContract: undefined
         },
         firebase: {
             contracts: {
@@ -76,6 +78,8 @@
                     console.log(snapshot.val());
 
                     this.allContracts = snapshot.val();
+
+                    this.selectedContract = this.allContracts[0].contract;
 
                     _.forEach(this.allContracts, function (contract) {
                         console.log('Instantiating contract at ' + contract.contract);
