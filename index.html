@@ -18,10 +18,10 @@
 
     <div v-if="!loading" v-cloak class="miTable">
         <div class="titleBar">
-            {{ selectedContract }} <i class="fa fa-chevron-down fa-fw"></i>
+            {{ selectedContract }} <i class="fa fa-chevron-down fa-fw" @click="selectingContract = !selectingContract" ></i>
         </div>
 
-        <div v-for="contract in allContracts" href="#" @click="selectedContract = contract.contract">
+        <div v-if="selectingContract" v-for="contract in allContracts" href="#" @click="selectContract(contract.contract)">
             {{ contract.name }}
         </div>
 
@@ -70,7 +70,14 @@
             loading: true,
             allContracts: undefined,
             grandTotal: undefined,
-            selectedContract: undefined
+            selectedContract: undefined,
+            selectingContract: false
+        },
+        methods: {
+            selectContract: function (contract, event) {
+                this.selectedContract = contract;
+                this.selectingContract = false;
+            }
         },
         firebase: {
             contracts: {
