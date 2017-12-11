@@ -11,7 +11,7 @@
 <div id="vue-app">
     <h1>Betting Boys</h1>
 
-    <h2 v-if="!loading" v-cloak>Total: <span class="grandTotal">{{ grandTotal }}</span></h2>
+
 
     <p v-if="loading" class="spinner">
         <i class="fa fa-money fa-spin fa-5x fa-fw"></i>
@@ -19,12 +19,15 @@
     </p>
 
     <div v-if="!loading" v-cloak class="miTable">
-        <div class="boyRow" v-for="boy in resolvedContract.boys">
-            <div class="boyName">{{ boy.name }}</div>
-            <div class="month">{{ boy.month }}</div>
-            <div class="total"
-                 v-bind:class="{ 'pos': boy.total > 0, 'neut': boy.total === 0, 'tbc': boy.total === -1 }">
-                {{ boy.total }}
+        <div v-for="contract in allContracts">
+            <h2 v-if="!loading" v-cloak>{{ contract.name }}: <span class="grandTotal">{{ contract.grandTotal }}</span></h2>
+            <div class="boyRow" v-for="boy in contract.boys">
+                <div class="boyName">{{ boy.name }}</div>
+                <div class="month">{{ boy.month }}</div>
+                <div class="total"
+                     v-bind:class="{ 'pos': boy.total > 0, 'neut': boy.total === 0, 'tbc': boy.total === -1 }">
+                    {{ boy.total }}
+                </div>
             </div>
         </div>
     </div>
@@ -60,7 +63,7 @@
         el: '#vue-app',
         data: {
             loading: true,
-            resolvedContract: undefined,
+            allContracts: undefined,
             grandTotal: undefined
         },
         firebase: {
@@ -72,47 +75,43 @@
                     console.log('loaded contracts ref...');
                     console.log(snapshot.val());
 
-                    this.resolvedContract = snapshot.val();
+                    this.allContracts = snapshot.val();
 
-                    console.log('Instantiating contract at ' + this.resolvedContract.contract);
-                    console.log('Contract ABI ' + this.resolvedContract.abi);
+                    _.forEach(this.allContracts, function (contract) {
+                        console.log('Instantiating contract at ' + contract.contract);
+                        var ethContract = new ethers.Contract(contract.contract, contract.abi, provider);
 
-                    var contract = new ethers.Contract(this.resolvedContract.contract, this.resolvedContract.abi, provider);
-                    console.log(contract);
-
-                    contract.owner().then(function (result) {
-                        console.log('Owner ' + result[0]);
-                    });
-
-                    var callPromises = [];
-                    this.resolvedContract.boys.forEach(function (entity) {
-                        console.log(entity);
-                        callPromises.push(contract.readEntry(ethers.utils.toUtf8Bytes(entity['initials'])));
-                    });
-
-                    console.log(this.resolvedContract.boys);
-
-                    Promise.all(callPromises).then(function(callResults) {
-                        _.forEach(callResults, function (callRes) {
-                            var total = parseInt(callRes[1].toString());
-                            var initials = ethers.utils.toUtf8String(callRes[0].toString());
-
-                            if (total !== 0) {
-                                var boyObj = _.find(that.resolvedContract.boys, function (boy) {
-                                    return boy.initials === initials
-                                });
-                                boyObj.total = total;
-                            }
+                        ethContract.owner().then(function (result) {
+                            console.log(contract.contract + ' owner ' + result[0]);
                         });
 
-                        that.grandTotal = _.reduce(that.resolvedContract.boys, function(sum, n) {
-                            if (n.total < 0) {
-                                return sum;
-                            }
-                            return sum + n.total
-                        }, 0);
+                        var callPromises = [];
+                        contract.boys.forEach(function (entity) {
+                            callPromises.push(ethContract.readEntry(ethers.utils.toUtf8Bytes(entity['initials'])));
+                        });
 
-                        that.loading = false;
+                        Promise.all(callPromises).then(function(callResults) {
+                            _.forEach(callResults, function (callRes) {
+                                var total = parseInt(callRes[1].toString());
+                                var initials = ethers.utils.toUtf8String(callRes[0].toString());
+
+                                if (total !== 0) {
+                                    var boyObj = _.find(contract.boys, function (boy) {
+                                        return boy.initials === initials
+                                    });
+                                    boyObj.total = total;
+                                }
+                            });
+
+                            contract.grandTotal = _.reduce(contract.boys, function(sum, n) {
+                                if (n.total < 0) {
+                                    return sum;
+                                }
+                                return sum + n.total
+                            }, 0);
+
+                            that.loading = false;
+                        });
                     });
                 }
             }
