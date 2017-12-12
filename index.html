@@ -16,13 +16,14 @@
         <span class="sr-only">Loading...</span>
     </p>
 
-    <div v-if="!loading" v-cloak class="miTable">
+    <div v-if="!loading" v-cloak>
         <div class="titleBar">
             {{ selectedContract.name }} <i class="fa fa-chevron-down fa-fw" @click="selectingContract = !selectingContract" ></i>
-        </div>
-
-        <div class="hoverMenu" v-if="selectingContract" v-for="contract in allContracts" href="#" @click="selectContract(contract)">
-            {{ contract.name }}
+            <div class="titleBarInner">
+                <div class="hoverMenu" v-if="selectingContract" v-for="contract in allContracts" href="#" @click="selectContract(contract)">
+                    {{ contract.name }}
+                </div>
+            </div>
         </div>
 
         <div v-for="contract in allContracts" v-if="selectedContract == contract">

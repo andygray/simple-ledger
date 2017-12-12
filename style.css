@@ -105,9 +105,18 @@ h2 {
 
 .titleBar {
     background-color: green;
-    color: #333;
+    color: #CCC;
     text-align: center;
     width: 100%;
     height: 40px;
     line-height: 40px;
+    position: relative;
+}
+
+.titleBarInner {
+    position: absolute;
+    color: #222;
+    top: 40px;
+    left: 0;
+    width: 100%;
 }
