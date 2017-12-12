@@ -17,7 +17,6 @@ h1 {
     color: #AAA;
     font-size: 2em;
     text-align: center;
-    padding: 5px;
 }
 
 h2 {
@@ -86,4 +85,29 @@ h2 {
     text-align: center;
     margin-top: 2em;
     color: green;
+}
+
+.hoverMenu {
+    background-color: #AAA;
+    text-align: center;
+    z-index: 999;
+    height: 40px;
+    flex-flow: row;
+    align-items: center;
+    -webkit-border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    -moz-border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    -ms-border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    -o-border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    line-height: 40px;
+    width: 100%;
+}
+
+.titleBar {
+    background-color: green;
+    color: #333;
+    text-align: center;
+    width: 100%;
+    height: 40px;
+    line-height: 40px;
 }

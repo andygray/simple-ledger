@@ -18,15 +18,15 @@
 
     <div v-if="!loading" v-cloak class="miTable">
         <div class="titleBar">
-            {{ selectedContract }} <i class="fa fa-chevron-down fa-fw" @click="selectingContract = !selectingContract" ></i>
+            {{ selectedContract.name }} <i class="fa fa-chevron-down fa-fw" @click="selectingContract = !selectingContract" ></i>
         </div>
 
-        <div v-if="selectingContract" v-for="contract in allContracts" href="#" @click="selectContract(contract.contract)">
+        <div class="hoverMenu" v-if="selectingContract" v-for="contract in allContracts" href="#" @click="selectContract(contract)">
             {{ contract.name }}
         </div>
 
-        <div v-for="contract in allContracts" v-if="selectedContract == contract.contract">
-            <h2 v-if="!loading" v-cloak><span class="grandTotal">{{ contract.grandTotal }}</span></h2>
+        <div v-for="contract in allContracts" v-if="selectedContract == contract">
+            <h2><span class="grandTotal">{{ contract.grandTotal }}</span></h2>
             <div class="boyRow" v-for="boy in contract.boys">
                 <div class="boyName">{{ boy.name }}</div>
                 <div class="month">{{ boy.month }}</div>
@@ -90,7 +90,7 @@
 
                     this.allContracts = snapshot.val();
 
-                    this.selectedContract = this.allContracts[0].contract;
+                    this.selectedContract = this.allContracts[0];
 
                     _.forEach(this.allContracts, function (contract) {
                         console.log('Instantiating contract at ' + contract.contract);
@@ -119,15 +119,15 @@
                             });
 
                             contract.grandTotal = _.reduce(contract.boys, function(sum, n) {
-                                if (n.total < 0) {
+                                if (n.total <= 0) {
                                     return sum;
                                 }
                                 return sum + n.total
                             }, 0);
-
-                            that.loading = false;
                         });
                     });
+
+                    that.loading = false;
                 }
             }
         }
