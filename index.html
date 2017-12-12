@@ -18,7 +18,8 @@
 
     <div v-if="!loading" v-cloak>
         <div class="titleBar">
-            {{ selectedContract.name }} <i class="fa fa-chevron-down fa-fw" @click="selectingContract = !selectingContract" ></i>
+            <span @click="selectingContract = !selectingContract">{{ selectedContract.name }}</span>
+            <i class="fa fa-chevron-down fa-fw" @click="selectingContract = !selectingContract"></i>
             <div class="titleBarInner">
                 <div class="hoverMenu" v-if="selectingContract" v-for="contract in allContracts" href="#" @click="selectContract(contract)">
                     {{ contract.name }}
