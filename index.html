@@ -28,7 +28,7 @@
         </div>
 
         <div v-for="contract in allContracts" v-if="selectedContract == contract">
-            <h2><span class="grandTotal">{{ contract.grandTotal }}</span></h2>
+            <h2><span class="grandTotal"><i class="fa fa-gbp" aria-hidden="true"></i> {{ contract.grandTotal }}</span></h2>
             <div class="boyRow" v-for="boy in contract.boys">
                 <div class="boyName">{{ boy.name }}</div>
                 <div class="month">{{ boy.month }}</div>
@@ -107,7 +107,7 @@
                             callPromises.push(ethContract.readEntry(ethers.utils.toUtf8Bytes(entity['initials'])));
                         });
 
-                        Promise.all(callPromises).then(function(callResults) {
+                        Promise.all(callPromises).then(function (callResults) {
                             _.forEach(callResults, function (callRes) {
                                 var total = parseInt(callRes[1].toString());
                                 var initials = ethers.utils.toUtf8String(callRes[0].toString());
@@ -120,16 +120,16 @@
                                 }
                             });
 
-                            contract.grandTotal = _.reduce(contract.boys, function(sum, n) {
+                            contract.grandTotal = _.reduce(contract.boys, function (sum, n) {
                                 if (n.total <= 0) {
                                     return sum;
                                 }
                                 return sum + n.total
                             }, 0);
+
+                            that.loading = false;
                         });
                     });
-
-                    that.loading = false;
                 }
             }
         }
