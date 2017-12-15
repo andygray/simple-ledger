@@ -120,3 +120,8 @@ h2 {
     left: 0;
     width: 100%;
 }
+
+.champion {
+    color: gold;
+    padding-left: 20px;
+}

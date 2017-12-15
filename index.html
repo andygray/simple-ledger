@@ -28,9 +28,12 @@
         </div>
 
         <div v-for="contract in allContracts" v-if="selectedContract == contract">
-            <h2><span class="grandTotal"><i class="fa fa-gbp" aria-hidden="true"></i>{{ contract.grandTotal }}</span></h2>
+            <h2><span class="grandTotal"><i class="fa fa-gbp"></i>{{ contract.grandTotal }}</span></h2>
             <div class="boyRow" v-for="boy in contract.boys">
-                <div class="boyName">{{ boy.name }}</div>
+                <div class="boyName">
+                    {{ boy.name }}
+                    <span v-if="boy.champion" class="champion"><i class="fa fa-trophy"></i></span>
+                </div>
                 <div class="month">{{ boy.month }}</div>
                 <div class="total" :class="{ 'pos': boy.total > 0, 'neut': boy.total === 0, 'tbc': boy.total === -1 }">
                     {{ boy.total }}
@@ -126,6 +129,9 @@
                                 }
                                 return sum + n.total
                             }, 0);
+
+                            var bestObj = _.maxBy(contract.boys, 'total');
+                            bestObj['champion'] = true;
 
                             that.loading = false;
                         });
